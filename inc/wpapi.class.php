@@ -83,6 +83,11 @@ class WPAPI {
                 "enabled"       => true,
                 "secure"        => true,
                 "func"          => "post"
+            ],
+            "register"      => [
+                "enabled"       => true,
+                "secure"        => true,
+                "func"          => "register" 
             ]
         ];
         
@@ -543,6 +548,42 @@ class WPAPI {
         } else {
             
             self::error(__("Could not insert post!",WPAPI_DOMAIN));
+            
+        }
+        
+    }
+    
+    /**
+     * Registers a new user.
+     */
+    private static function register() {
+        
+        // Required input
+        $req = array(
+            "username"      =>  "",
+            "password"      =>  "",
+            "email"         =>  FILTER_VALIDATE_EMAIL
+        );
+        
+        // Validate
+        self::validate_input($req);
+        
+        // Get credentials
+        $id = username_exists(self::$input->username);
+        $user = self::$input->username;
+        $pass = self::$input->password;
+        $email = self::$input->email;
+        
+        // Check user does not exist already
+        if (!$id and email_exists($email) == false) {
+            
+            // Create user and send ID
+            $user_id = wp_create_user($user,$pass,$email);
+            self::send(["user_id" => $user_id]);
+            
+        } else {
+            
+            self::error("This user already exists!");
             
         }
         
